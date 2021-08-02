@@ -3,12 +3,20 @@ const Schema = mongoose.Schema;
 
 const ArticleSchema = new Schema(
   {
-    index: { type: Number },
-    text: { type: String },
+    title: { type: String },
+    abstract: { type: String, default: "" },
+    content: { type: String },
+    createTime: { type: Date },
+    lastEditTime: { type: Date, default: Date.now() },
+    tags: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "tags",
+      },
+    ],
+    isPublished: { type: Boolean, default: false },
   },
-  {
-    collections: "articles",
-  }
+  { collection: "articles" }
 );
 
 module.exports = mongoose.model("articles", ArticleSchema);

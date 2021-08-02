@@ -18,8 +18,7 @@ router.post("/register", async (ctx) => {
   });
 
   if (findResult.length > 0) {
-    ctx.status = 500;
-    ctx.body = "root has been registered";
+    ctx.throw(500, "root has been registered");
     return;
   }
 
@@ -41,8 +40,7 @@ router.post("/login", async (ctx) => {
   });
 
   if (!findResult.length) {
-    ctx.status = 500;
-    ctx.body = "root 不存在";
+    ctx.throw(500, "root 不存在");
     return;
   }
 
@@ -59,15 +57,14 @@ router.post("/login", async (ctx) => {
     };
 
     const token = jwt.sign(payload, keys.secretOrKey, {
-      expiresIn: 3600000 /* 设置该 token 有效时长 */,
+      expiresIn: "6h" /* 设置该 token 有效时长 */,
     });
 
     ctx.body = {
       token: "Bearer " + token /* 注意 token 的写法是固定的 */,
     };
   } else {
-    ctx.status = 400;
-    ctx.body = "your password is wrong";
+    ctx.throw(400, "your password is wrong");
   }
 });
 
@@ -81,7 +78,6 @@ router.get(
     const userInfo =
       ctx.state.user; /* ../../config/passport 中传来的用户信息 */
 
-    /* 不显示 password */
     ctx.body = {
       id: userInfo.id,
       name: userInfo.name,
