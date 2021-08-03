@@ -3,6 +3,7 @@ const router = new Router();
 const passport = require("koa-passport");
 
 const Tag = require("../../../mongodb/models/Tag");
+const Article = require("../../../mongodb/models/Article");
 
 router.post(
   "/createTag",
@@ -35,5 +36,29 @@ router.post(
     ctx.body = newTag;
   }
 );
+
+router.get("/getTags", async (ctx) => {
+  const findResult = await Tag.find({});
+  ctx.body = findResult;
+});
+
+/* 删除没有被使用的标签 */
+router.get("/filterTags", async (ctx) => {
+  let tags = await Tag.find({});
+  for (const tag of tags) {
+    const result = await Article.find({
+      tags: { $elemMatch: { $eq: tag } },
+    });
+
+    if (!result.length) {
+      await Tag.deleteOne({
+        name: tag.name,
+      });
+    }
+  }
+
+  tags = await Tag.find({});
+  ctx.body = tags;
+});
 
 module.exports = router;
