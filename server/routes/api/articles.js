@@ -177,12 +177,20 @@ router.post(
   }
 );
 
+/*
+ * @route POST api/article/getArticle
+ * @desc 获取文章信息接口地址
+ * @access 接口是公开的
+ */
 router.post("/getArticle", async (ctx) => {
   const req = ctx.request.body;
   const _id = mongoose.Types.ObjectId(req.id);
   const findResult = await Article.find({ _id }).populate("tags", ["name"]);
 
-  ctx.body = findResult;
+  ctx.body = {
+    success: true,
+    article: findResult[0],
+  };
 });
 
 /* 通过标签筛选首页文章 */

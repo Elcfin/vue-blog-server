@@ -9,6 +9,11 @@ const keys = require("../../config/keys");
 
 const router = new Router();
 
+/*
+ * @route POST api/users/register
+ * @desc 新用户注册接口地址
+ * @access 接口是公开的
+ */
 router.post("/register", async (ctx) => {
   const newUserInfo = ctx.request.body;
 
@@ -34,13 +39,22 @@ router.post("/register", async (ctx) => {
   ctx.body = newUser;
 });
 
+/*
+ * @route POST api/users/login
+ * @desc 用户登录接口地址
+ * @access 接口是公开的
+ */
 router.post("/login", async (ctx) => {
   const findResult = await User.find({
     name: "root",
   });
 
   if (!findResult.length) {
-    ctx.throw(500, "root 不存在");
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      error: "用户不存在",
+    };
     return;
   }
 
@@ -61,13 +75,24 @@ router.post("/login", async (ctx) => {
     });
 
     ctx.body = {
+      success: true,
       token: "Bearer " + token /* 注意 token 的写法是固定的 */,
     };
   } else {
-    ctx.throw(400, "your password is wrong");
+    ctx.status = 401;
+    ctx.body = {
+      success: false,
+      error: "your password is wrong",
+    };
+    return;
   }
 });
 
+/*
+ * @route GET api/users/current
+ * @desc 获取当前用户信息接口地址
+ * @access 接口是私有的
+ */
 router.get(
   "/current",
   /* 监听 ../../config/passport 中 new JwtStrategy() 中的回调函数 */
@@ -79,6 +104,7 @@ router.get(
       ctx.state.user; /* ../../config/passport 中传来的用户信息 */
 
     ctx.body = {
+      success: true,
       id: userInfo.id,
       name: userInfo.name,
     };
