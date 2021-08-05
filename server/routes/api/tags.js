@@ -5,44 +5,54 @@ const passport = require("koa-passport");
 const Tag = require("../../../mongodb/models/Tag");
 const Article = require("../../../mongodb/models/Article");
 
-router.post(
-  "/createTag",
+/*
+ * @route GET api/tags/getTags
+ * @desc 获取所有标签接口地址
+ * @access 接口是私有的
+ */
+router.get(
+  "/getTags",
   passport.authenticate("jwt", {
     session: false,
   }),
   async (ctx) => {
-    const newTagInfo = ctx.request.body;
-    const name = newTagInfo.name;
-
-    if (name === "") {
-      ctx.status = 400;
-      ctx.body = { error: "name is ''" };
-      return;
-    }
-
-    const findResult = await Tag.find({ name });
-
-    if (findResult.length > 0) {
-      ctx.status = 500;
-      ctx.body = { error: "already has this tag" };
-      return;
-    }
-
-    const newTag = new Tag({
-      name,
-    });
-
-    await newTag.save();
-    ctx.body = newTag;
+    const findResult = await Tag.find({});
+    ctx.body = {
+      success: true,
+      tags: findResult,
+    };
   }
 );
 
-router.get("/getTags", async (ctx) => {
+/*
+ * @route GET api/tags/getPublicTags
+ * @desc 获取已发布标签接口地址
+ * @access 接口是公开的
+ */
+router.get("/getPublicTags", async (ctx) => {
   const findResult = await Tag.find({});
-  ctx.body = findResult;
+  const tags = [];
+
+  for (const tag of findResult) {
+    const result = await Article.find({
+      tags: { $elemMatch: { $eq: tag } },
+      isPublished: true,
+    });
+
+    if (result.length) tags.push(tag);
+  }
+
+  ctx.body = {
+    success: true,
+    tags,
+  };
 });
 
-/* 删除没有被使用的标签 */
+/*
+ * @route GET api/tags/filterTags
+ * @desc 删除没有被使用的标签接口地址
+ * @access 接口是公开的
+ */
 router.get("/filterTags", async (ctx) => {
   let tags = await Tag.find({});
   for (const tag of tags) {
@@ -50,15 +60,14 @@ router.get("/filterTags", async (ctx) => {
       tags: { $elemMatch: { $eq: tag } },
     });
 
-    if (!result.length) {
+    if (!result.length)
       await Tag.deleteOne({
         name: tag.name,
       });
-    }
   }
 
   tags = await Tag.find({});
-  ctx.body = tags;
+  ctx.body = { success: true, tags };
 });
 
 module.exports = router;
