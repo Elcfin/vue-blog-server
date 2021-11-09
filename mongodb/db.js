@@ -1,5 +1,5 @@
 /* 数据库基础信息 */
-const hostname = "localhost";
+const hostname = "139.196.194.111";
 const port = 27017;
 const name = "blogTest";
 

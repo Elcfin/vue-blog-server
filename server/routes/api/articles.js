@@ -259,6 +259,7 @@ router.post("/paging", async (ctx) => {
   /* 每页显示数目 */
   const size = parseInt(req.size);
   const skip = (page - 1) * size;
+  const pageNumber = articleNumber ? Math.ceil(articleNumber / size) : 1;
 
   /* 先标签筛选 */
   let result;
@@ -284,7 +285,13 @@ router.post("/paging", async (ctx) => {
       .limit(size);
   }
   const hasMore = articleNumber - page * size > 0;
-  ctx.body = { success: true, hasMore, articles: result, articleNumber };
+  ctx.body = {
+    success: true,
+    hasMore,
+    articles: result,
+    articleNumber,
+    pageNumber,
+  };
 });
 
 /*
