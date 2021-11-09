@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 /* 将密码转换成哈希值 */
 const encrypt = (password) => {
